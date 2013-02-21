@@ -4,26 +4,14 @@
  <meta charset="utf-8" />
  <title>writer</title>
  <script src="scripts/modernizr.js"></script>
- <script>
- function debug( msg )
- {
-  document.getElementById("dbgMessage").innerHTML=msg;
- }
- window.onload = function()
- {
-  if (Modernizr.canvas)
-  {
-   debug("Hello");
-  }
-  else
-  {
-   debug("No Canvas :(");
-  }
- } 
- </script>
+ <script src="scripts/writer.js"></script>
 </head>
 <body>
-<h1 id="dbgMessage"></h1>
+  <ul id="features"></ul>
 <canvas style="border:1px dotted;"></canvas>
 </body>
+ <script>
+ // TODO:: Handle detection more cleanly, move this back into <head>
+ window.onload = testForFeatures();
+ </script>
 </html>
