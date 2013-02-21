@@ -3,7 +3,27 @@
 <head>
  <meta charset="utf-8" />
  <title>writer</title>
+ <script src="scripts/modernizr.js"></script>
+ <script>
+ function debug( msg )
+ {
+  document.getElementById("dbgMessage").innerHTML=msg;
+ }
+ window.onload = function()
+ {
+  if (Modernizr.canvas)
+  {
+   debug("Hello");
+  }
+  else
+  {
+   debug("No Canvas :(");
+  }
+ } 
+ </script>
 </head>
 <body>
+<h1 id="dbgMessage"></h1>
+<canvas style="border:1px dotted;"></canvas>
 </body>
 </html>
