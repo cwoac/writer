@@ -1,17 +1,17 @@
 <!DOCTYPE html5>
 <html lang="en">
-<head>
- <meta charset="utf-8" />
- <title>writer</title>
- <script src="scripts/modernizr.js"></script>
- <script src="scripts/writer.js"></script>
-</head>
-<body>
-  <ul id="features"></ul>
-<canvas style="border:1px dotted;"></canvas>
-</body>
- <script>
- // TODO:: Handle detection more cleanly, move this back into <head>
- window.onload = testForFeatures();
- </script>
+  <head>
+    <meta charset="utf-8" />
+    <title>writer</title>
+    <script src="scripts/modernizr.js"></script>
+    <script src="scripts/writer.js"></script>
+  </head>
+  <body>
+    <ul id="features"></ul>
+    <canvas id="theCanvas" style="border:1px dotted;"></canvas>
+  </body>
+  <script>
+    // TODO:: Handle detection more cleanly, move this back into <head>
+    window.onload = writer.initialiseWriter();
+  </script>
 </html>
