@@ -17,20 +17,36 @@ var writer = (function ()
 
   function testForFeatures()
   {
-    if( Modernizr.canvas ) logFeature("canvas"); else logFeature("no canvas");
-    if( Modernizr.canvastext ) logFeature("canvas text"); else logFeature("no canvas text");
-    if( Modernizr.indexeddb ) logFeature("indexeddb"); else logFeature("no indexeddb");
+    return Modernizr.canvas && Modernizr.canvastext && Modernizr.indexeddb;
+  }
+
+
+
+  function recalcCursor()
+  {
   }
 
   // publicly exposed stuff
   var pub = {};
 
-  pub.initialiseWriter = function()
+  pub.listMissingFeatures = function()
   {
-    testForFeatures();
+    if( !Modernizr.canvas ) logFeature( "No canvas.");
+    if( !Modernizr.canvastext ) logFeature( "No canvas text.");
+    if( !Modernizr.indexeddb ) logFeature( "No indexeddb.");
+  }
+
+  pub.resize = function()
+  {
     canvas = document.getElementById("theCanvas");
-    canvas.width = document.width - 10;
-    canvas.height = document.height - 10;
+    canvas.width = window.innerWidth - 10;
+    canvas.height = window.innerHeight - 10;    
+  }
+
+  pub.initialise = function()
+  {
+    if( !testForFeatures() ) window.location = "missing_features.html";
+    pub.resize();
   }
 
   return pub;
