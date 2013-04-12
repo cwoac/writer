@@ -54,7 +54,7 @@ var writer = (function ()
   function selectBox( box )
   {
     // if the box is already selected, do nothin
-    if( selectList.indexOf(box) == -1 )
+    if( box && selectList.indexOf(box) == -1 )
     {
       box.selected = true;
       selectList.push(box);
@@ -132,21 +132,8 @@ var writer = (function ()
     }
     else
     {
+      // all the work for clicks / drags will have been already completed.
       mouseUpTime = e.timeStamp;
-      // okay, was it a click?
-      if( mouseUpTime - mouseDownTime < 200 )
-      {
-        if( clickBox )
-        {
-          if( clickBoxState )
-            deselectBox( clickBox );
-        }
-        else
-        {
-          selectNone();
-        }
-      }
-      // else must have been a drag. This will have been handled in the drag event. Clean up.
     }
 
     mouseY = 0;
@@ -162,7 +149,7 @@ var writer = (function ()
     mouseIsDrag = false;
 
     clickBox=pick(e);
-    clickBoxState = clickBox.selected;
+    clickBoxState = clickBox!=null && clickBox.selected;
     
     if( !event.shiftKey && !event.ctrlKey )
       selectNone();
@@ -204,8 +191,9 @@ var writer = (function ()
 
   pub.resize = function()
   {
-    canvas.width = window.innerWidth - 10;
-    canvas.height = window.innerHeight - 10;    
+    // TODO:: Figure out what these should really be
+    canvas.width = window.innerWidth - 20;
+    canvas.height = window.innerHeight - 20;    
     pub.redraw();
   }
 
