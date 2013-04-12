@@ -1,15 +1,25 @@
 var writer = (function ()
 {
   // private variable declarations here
-  var cursorLeft;
-  var cursorTop;
 
   // handy pointer to canvas element
   var canvas;
   // also handy pointer to the canvas' context
   var context;
 
+  // for dragging
+  var dragOffsetX;
+  var dragOffsetY;
+  
+  // need to deduce which events are which.
+  var mouseDownTime=0;
+  var mouseUpTime=0;
+  var mouseIsDrag=false;
+  var clickBoxState=false;
+  var clickBox=null;
+
   var boxes = [];
+  var selectList = [];
 
   function logFeature( msg )
   {
@@ -24,15 +34,6 @@ var writer = (function ()
     return Modernizr.canvas && Modernizr.canvastext && Modernizr.indexeddb;
   }
 
-  function recalcCursor()
-  {
-  }
-
-  function selectNone()
-  {
-    boxes.forEach( function(entry){ entry.c="#000000"; });
-  }
-
   function addBox( e )
   {
     var box = {};
@@ -40,17 +41,55 @@ var writer = (function ()
     box.y = e.offsetY-25;
     box.w = 50;
     box.h = 50;
-    box.c = "#000000";
+    box.selected = false;
     boxes.push( box );
   }
 
-  function dblClickHandler(e)
+  function selectNone()
   {
-    addBox( e );
-    pub.redraw();
+    boxes.forEach( function(entry){ entry.selected=false; });
+    selectList = [];
   }
 
-  function clickHandler(e) 
+  function selectBox( box )
+  {
+    // if the box is already selected, do nothin
+    if( selectList.indexOf(box) == -1 )
+    {
+      box.selected = true;
+      selectList.push(box);
+    }
+  }
+
+  function selectOnlyBox( box )
+  {
+    selectNone();
+    selectBox(box);
+  }
+
+  function deselectBox( box )
+  {
+    // if the box is already unselected, do nothing
+    if( selectList.indexOf(box) > -1 )
+    {
+      box.selected = false;
+      selectList.splice(selectList.indexOf(box),1);
+    }
+  }
+
+  function toggleSelect( box )
+  {
+    if( selectList.indexOf(box) == -1 )
+    {
+      selectBox(box);
+    }
+    else
+    {
+      deselectBox(box);
+    }
+  }
+
+  function pick( e )
   {
     var box = null;
     // loop in reverse order to depth sort
@@ -62,22 +101,86 @@ var writer = (function ()
           && e.offsetY<boxes[i].y+boxes[i].h)
       {
         box = boxes[i];
-        box.c = "#ff0000";
         break;
       }
     }
 
-    if( !box )
+    return box;
+  }
+
+  function mouseMoveHandler(e)
+  {
+    var deltaX = e.offsetX - dragOffsetX;
+    var deltaY = e.offsetY - dragOffsetY;
+    selectList.forEach( function(box) {
+      box.x += deltaX;
+      box.y += deltaY;
+    });
+    dragOffsetX = e.offsetX;
+    dragOffsetY = e.offsetY;
+    pub.redraw();
+  }
+
+  function mouseUpHandler(e)
+  {
+    // was this a double click?
+    if(    e.timeStamp - mouseUpTime < 200 
+        && e.timeStamp - mouseDownTime < 200 )
     {
-      selectNone();
+      mouseUpTime = 0;
+      addBox( e );
+    }
+    else
+    {
+      mouseUpTime = e.timeStamp;
+      // okay, was it a click?
+      if( mouseUpTime - mouseDownTime < 200 )
+      {
+        if( clickBox )
+        {
+          if( clickBoxState )
+            deselectBox( clickBox );
+        }
+        else
+        {
+          selectNone();
+        }
+      }
+      // else must have been a drag. This will have been handled in the drag event. Clean up.
     }
 
+    mouseY = 0;
+    mouseX = 0;
+    clickBox = null;
+    canvas.removeEventListener("mousemove",mouseMoveHandler);
     pub.redraw();
+  }
+
+  function mouseDownHandler(e)
+  {
+    mouseDownTime = e.timeStamp;
+    mouseIsDrag = false;
+
+    clickBox=pick(e);
+    clickBoxState = clickBox.selected;
+    
+    if( !event.shiftKey && !event.ctrlKey )
+      selectNone();
+
+    selectBox(clickBox);
+    dragOffsetX = e.offsetX;
+    dragOffsetY = e.offsetY;
+
+    canvas.addEventListener("mousemove",mouseMoveHandler);
   }
 
   function drawBox( box )
   {
-    context.strokeStyle = box.c;
+    if( box.selected )
+      context.strokeStyle = "#ff0000";
+    else
+      context.strokeStyle = "#000000";
+
     context.strokeRect( box.x, box.y, box.w, box.h );
   }
 
@@ -111,8 +214,8 @@ var writer = (function ()
     if( !testForFeatures() ) window.location = "missing_features.html";
     canvas = document.getElementById("theCanvas");
     context = canvas.getContext("2d");
-    canvas.addEventListener("click",clickHandler,false);
-    canvas.addEventListener("dblclick",dblClickHandler,false);
+    canvas.addEventListener("mousedown",mouseDownHandler,false);
+    canvas.addEventListener("mouseup",mouseUpHandler,false);
     pub.resize();
   }
 
