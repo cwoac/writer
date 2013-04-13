@@ -21,6 +21,13 @@ var writer = (function ()
   var boxes = [];
   var selectList = [];
 
+  var band = {};
+  band.x=0;
+  band.y=0;
+  band.w=0;
+  band.h=0;
+  band.inUse = false;
+
   function logFeature( msg )
   {
     var ol = document.getElementById("features");
@@ -112,10 +119,19 @@ var writer = (function ()
   {
     var deltaX = e.offsetX - dragOffsetX;
     var deltaY = e.offsetY - dragOffsetY;
-    selectList.forEach( function(box) {
-      box.x += deltaX;
-      box.y += deltaY;
-    });
+    if( selectList.length>0 )
+    {
+      selectList.forEach( function(box) {
+        box.x += deltaX;
+        box.y += deltaY;
+      });
+    }
+    else
+    {
+      //TODO:: overload deltas
+      band.w=e.offsetX-band.x;
+      band.h=e.offsetY-band.y;
+    }
     dragOffsetX = e.offsetX;
     dragOffsetY = e.offsetY;
     pub.redraw();
@@ -136,9 +152,8 @@ var writer = (function ()
       mouseUpTime = e.timeStamp;
     }
 
-    mouseY = 0;
-    mouseX = 0;
     clickBox = null;
+    band.inUse = false;
     canvas.removeEventListener("mousemove",mouseMoveHandler);
     pub.redraw();
   }
@@ -157,6 +172,10 @@ var writer = (function ()
     selectBox(clickBox);
     dragOffsetX = e.offsetX;
     dragOffsetY = e.offsetY;
+    band.x = dragOffsetX;
+    band.y = dragOffsetY;
+
+    if( selectList.length == 0 ) band.inUse = true;
 
     canvas.addEventListener("mousemove",mouseMoveHandler);
   }
@@ -171,6 +190,12 @@ var writer = (function ()
     context.strokeRect( box.x, box.y, box.w, box.h );
   }
 
+  function drawBand()
+  {
+    context.strokeStyle = "#00ff00";
+    context.strokeRect( band.x, band.y, band.w, band.h );
+  }
+
   // publicly exposed stuff
   var pub = {};
 
@@ -180,6 +205,7 @@ var writer = (function ()
     // reset the contents of the canvas
     canvas.width = canvas.width;
     boxes.forEach(drawBox);
+    if( band.inUse ) drawBand();
   }
 
   pub.listMissingFeatures = function()
