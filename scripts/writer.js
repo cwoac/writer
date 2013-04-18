@@ -96,6 +96,47 @@ var writer = (function ()
     }
   }
 
+  function selectBand()
+  {
+    // shouldn't trigger, but hey.
+    if( !band.inUse ) return;
+
+    selectNone();
+    var top;
+    var bottom;
+    var left;
+    var right;
+    if( band.w > 0 )
+    {
+      left = band.x;
+      right = band.x + band.w;
+    }
+    else
+    {
+      left = band.x + band.w;
+      right = band.x;
+    }
+
+    if( band.h > 0 )
+    {
+      top = band.y;
+      bottom = band.y + band.h;
+    }
+    else
+    {
+      top = band.y + band.h;
+      bottom = band.y;
+    }
+
+    boxes.forEach( function(box){
+      if(    (box.x + box.w >= left && box.x <= right)
+          && (box.y + box.h >= top && box.y <= bottom) )
+      {
+        selectBox(box)
+      }
+    });
+  }
+
   function pick( e )
   {
     var box = null;
@@ -117,10 +158,10 @@ var writer = (function ()
 
   function mouseMoveHandler(e)
   {
-    var deltaX = e.offsetX - dragOffsetX;
-    var deltaY = e.offsetY - dragOffsetY;
-    if( selectList.length>0 )
+    if( selectList.length>0 && !band.inUse )
     {
+      var deltaX = e.offsetX - dragOffsetX;
+      var deltaY = e.offsetY - dragOffsetY;
       selectList.forEach( function(box) {
         box.x += deltaX;
         box.y += deltaY;
@@ -128,9 +169,9 @@ var writer = (function ()
     }
     else
     {
-      //TODO:: overload deltas
       band.w=e.offsetX-band.x;
       band.h=e.offsetY-band.y;
+      selectBand();
     }
     dragOffsetX = e.offsetX;
     dragOffsetY = e.offsetY;
