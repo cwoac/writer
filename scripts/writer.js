@@ -350,11 +350,13 @@ var writer = (function ()
         {
           // octant #1
           Ax = line.from.x+line.from.w;
+          Bx = line.to.x;
         }
         else
         {
           // octant #2
           Ay = line.from.y;
+          By = line.to.y+line.to.h;
         }
       }
       else
@@ -363,11 +365,13 @@ var writer = (function ()
         {
           // octant #3
           Ax = line.from.x+line.from.w;
+          Bx = line.to.x;
         }
         else
         {
           // octant #4
           Ay = line.from.y+line.from.h;
+          By = line.to.y;
         }
       }
     }
@@ -379,11 +383,13 @@ var writer = (function ()
         {
           // octant #5
           Ay = line.from.y+line.from.h;
+          By = line.to.y;
         }
         else
         {
           // octant #6
           Ax = line.from.x;
+          Bx = line.to.x+line.to.w;
         }
       }
       else
@@ -392,14 +398,18 @@ var writer = (function ()
         {
           // octant #7
           Ay = line.from.y;
+          By = line.to.y+line.to.h;
         }
         else
         {
           // octant #8
           Ax = line.from.x;
+          Bx = line.to.x+line.to.w;
         }
       }
     }
+
+    // Now do the same for the other side.
 
     context.moveTo( Ax,Ay );
     context.lineTo( Bx,By );
