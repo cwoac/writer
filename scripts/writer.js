@@ -313,9 +313,96 @@ var writer = (function ()
 
   function drawLine( line )
   {
-    // TODO:: proper edge detection
-    context.moveTo( line.from.x+25, line.from.y+25 );
-    context.lineTo( line.to.x+25, line.to.y+25 );
+    /*
+     * drawing proper lines is hard!
+     * we need to figure out the orientation of the target box compared to the souce box
+     */ 
+
+    var ax = line.from.x + ( line.from.w / 2 );
+    var ay = line.from.y + ( line.from.h / 2 );
+    var bx = line.to.x + ( line.to.w / 2 );
+    var by = line.to.y + ( line.to.h / 2 );
+    var Ax = ax;
+    var Ay = ay;
+    var Bx = bx;
+    var By = by;
+    /*
+     *   bx<ax | bx>ax
+     *   by<ay | by<ay
+     *   -------------
+     *   bx<ax | bx>ax
+     *   by>ay | by>ay
+     *
+     *   Then need to figure out which octant to map to.
+     *   
+     *    \8|1/
+     *    7\|/2
+     *    -----
+     *    6/|\3
+     *    /5|4\ 
+     */
+
+    if( bx > ax )
+    {
+      if( by< ay )
+      {
+        if( (bx-ax) > (ay-by) )
+        {
+          // octant #1
+          Ax = line.from.x+line.from.w;
+        }
+        else
+        {
+          // octant #2
+          Ay = line.from.y;
+        }
+      }
+      else
+      {
+        if( (bx-ax) > (by-ay) )
+        {
+          // octant #3
+          Ax = line.from.x+line.from.w;
+        }
+        else
+        {
+          // octant #4
+          Ay = line.from.y+line.from.h;
+        }
+      }
+    }
+    else
+    {
+      if( by>ay )
+      {
+        if( (ax-bx) < (by-ay) )
+        {
+          // octant #5
+          Ay = line.from.y+line.from.h;
+        }
+        else
+        {
+          // octant #6
+          Ax = line.from.x;
+        }
+      }
+      else
+      {
+        if( (ax-bx) < (ay-by) )
+        {
+          // octant #7
+          Ay = line.from.y;
+        }
+        else
+        {
+          // octant #8
+          Ax = line.from.x;
+        }
+      }
+    }
+
+    context.moveTo( Ax,Ay );
+    context.lineTo( Bx,By );
   }
 
   function drawBand()
