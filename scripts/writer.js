@@ -207,7 +207,8 @@ var writer = (function ()
     clickBox=pick(e);
     clickBoxState = clickBox!=null && clickBox.selected;
     
-    if( !event.shiftKey && !event.ctrlKey )
+    // if the user clicks an unselected box and doesn't have shift held down deselect anything else.
+    if( !event.shiftKey && !clickBoxState )
       selectNone();
 
     selectBox(clickBox);
