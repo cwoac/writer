@@ -41,6 +41,8 @@ var writer = (function ()
     return Modernizr.canvas && Modernizr.canvastext && Modernizr.indexeddb;
   }
 
+  // box manipulation functions
+
   function addBox( e )
   {
     var box = {};
@@ -51,6 +53,8 @@ var writer = (function ()
     box.selected = false;
     boxes.push( box );
   }
+
+  // selection functions
 
   function selectNone()
   {
@@ -156,27 +160,7 @@ var writer = (function ()
     return box;
   }
 
-  function mouseMoveHandler(e)
-  {
-    if( selectList.length>0 && !band.inUse )
-    {
-      var deltaX = e.offsetX - dragOffsetX;
-      var deltaY = e.offsetY - dragOffsetY;
-      selectList.forEach( function(box) {
-        box.x += deltaX;
-        box.y += deltaY;
-      });
-    }
-    else
-    {
-      band.w=e.offsetX-band.x;
-      band.h=e.offsetY-band.y;
-      selectBand();
-    }
-    dragOffsetX = e.offsetX;
-    dragOffsetY = e.offsetY;
-    pub.redraw();
-  }
+  // mouse handlers
 
   function mouseUpHandler(e)
   {
@@ -196,6 +180,28 @@ var writer = (function ()
     clickBox = null;
     band.inUse = false;
     canvas.removeEventListener("mousemove",mouseMoveHandler);
+    pub.redraw();
+  }
+
+  function mouseMoveHandler(e)
+  {
+    if( selectList.length>0 && !band.inUse )
+    {
+      var deltaX = e.offsetX - dragOffsetX;
+      var deltaY = e.offsetY - dragOffsetY;
+      selectList.forEach( function(box) {
+        box.x += deltaX;
+        box.y += deltaY;
+      });
+    }
+    else
+    {
+      band.w=e.offsetX-band.x;
+      band.h=e.offsetY-band.y;
+      selectBand();
+    }
+    dragOffsetX = e.offsetX;
+    dragOffsetY = e.offsetY;
     pub.redraw();
   }
 
@@ -221,6 +227,8 @@ var writer = (function ()
 
     canvas.addEventListener("mousemove",mouseMoveHandler);
   }
+
+  // drawing functions
 
   function drawBox( box )
   {
