@@ -402,6 +402,7 @@ var writer = (function ()
           Ay = line.from.y;
           Ax = line.from.x+(line.from.w + ((line.from.h*dx)/dy))/2;
           By = line.to.y+line.to.h;
+          Bx = line.to.x+(line.to.w - ((line.to.h*dx)/dy))/2;
         }
         else
         {
@@ -409,6 +410,7 @@ var writer = (function ()
           Ax = line.from.x+line.from.w;
           Ay = line.from.y+(line.from.h - ((line.from.w*dy)/dx))/2;
           Bx = line.to.x;
+          By = line.to.y+(line.to.h + ((line.to.w*dy)/dx))/2;
         }
       }
       else
@@ -419,6 +421,7 @@ var writer = (function ()
           Ax = line.from.x+line.from.w;
           Ay = line.from.y+(line.from.h + ((line.from.w*dy)/dx))/2;
           Bx = line.to.x;
+          By = line.to.y+(line.to.h - ((line.to.w*dy)/dx))/2;
         }
         else
         {
@@ -426,6 +429,7 @@ var writer = (function ()
           Ay = line.from.y+line.from.h;
           Ax = line.from.x+(line.from.w + ((line.from.h*dx)/dy))/2;
           By = line.to.y;
+          Bx = line.to.x+(line.to.w - ((line.to.h*dx)/dy))/2;
         }
       }
     }
@@ -439,6 +443,7 @@ var writer = (function ()
           Ay = line.from.y+line.from.h;
           Ax = line.from.x+(line.from.w - ((line.from.h*dx)/dy))/2;
           By = line.to.y;
+          Bx = line.to.x+(line.to.w + ((line.to.h*dx)/dy))/2;
         }
         else
         {
@@ -446,6 +451,7 @@ var writer = (function ()
           Ax = line.from.x;
           Ay = line.from.y+(line.from.h + ((line.from.w*dy)/dx))/2;
           Bx = line.to.x+line.to.w;
+          By = line.to.y+(line.to.h - ((line.to.w*dy)/dx))/2;
         }
       }
       else
@@ -456,6 +462,7 @@ var writer = (function ()
           Ay = line.from.y;
           Ax = line.from.x+(line.from.w - ((line.from.h*dx)/dy))/2;
           By = line.to.y+line.to.h;
+          Bx = line.to.x+(line.to.w + ((line.to.h*dx)/dy))/2;
         }
         else
         {
@@ -463,6 +470,7 @@ var writer = (function ()
           Ax = line.from.x;
           Ay = line.from.y+(line.from.h - ((line.from.w*dy)/dx))/2;
           Bx = line.to.x+line.to.w;
+          By = line.to.y+(line.to.h + ((line.to.w*dy)/dx))/2;
         }
       }
     }
