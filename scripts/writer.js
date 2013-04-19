@@ -31,20 +31,6 @@ var writer = (function (my)
   band.h=0;
   band.inUse = false;
 
-  // used if we run this on a browser missing needed features
-  function logFeature( msg )
-  {
-    var ol = document.getElementById("features");
-    var li = document.createElement("li");
-    li.innerHTML = msg;
-    ol.appendChild(li);
-  }
-
-  // check we are able to run.
-  function testForFeatures()
-  {
-    return Modernizr.canvas && Modernizr.canvastext && Modernizr.indexeddb;
-  }
 
   // box manipulation functions
 
@@ -500,12 +486,7 @@ var writer = (function (my)
     if( band.inUse ) drawBand();
   }
 
-  listMissingFeatures = function()
-  {
-    if( !Modernizr.canvas ) logFeature( "No canvas.");
-    if( !Modernizr.canvastext ) logFeature( "No canvas text.");
-    if( !Modernizr.indexeddb ) logFeature( "No indexeddb.");
-  }
+
 
   resize = function()
   {
@@ -517,7 +498,7 @@ var writer = (function (my)
 
   initialise = function()
   {
-    if( !testForFeatures() ) window.location = "missing_features.html";
+    if( !my.features.testForFeatures() ) window.location = "missing_features.html";
     canvas = document.getElementById("theCanvas");
     context = canvas.getContext("2d");
     canvas.addEventListener("mousedown",mouseDownHandler,false);
@@ -526,7 +507,6 @@ var writer = (function (my)
   }
 
   my.redraw = redraw;
-  my.listMissingFeatures = listMissingFeatures;
   my.resize = resize;
   my.initialise = initialise;
 

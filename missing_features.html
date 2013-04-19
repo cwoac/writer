@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="writer.css" />
   <script src="scripts/modernizr.js"></script>
   <script src="scripts/writer.js"></script>
+  <script src="scripts/writer_features.js"></script>
 </head>
 <body>
     <h1>Error</h1>
@@ -14,6 +15,6 @@
 
     <script>
     // TODO:: Handle detection more cleanly, move this back into <head>
-    window.onload = writer.listMissingFeatures();
+    window.onload = writer.features.listMissingFeatures();
   </script>
 </body>
