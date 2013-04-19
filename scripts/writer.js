@@ -4,7 +4,7 @@ var writer = (function ()
 
   // handy pointer to canvas element
   var canvas;
-  // also handy pointer to the canvas' context
+  // even more handy pointer to the canvas' context
   var context;
 
   // for dragging
@@ -31,6 +31,7 @@ var writer = (function ()
   band.h=0;
   band.inUse = false;
 
+  // used if we run this on a browser missing needed features
   function logFeature( msg )
   {
     var ol = document.getElementById("features");
@@ -39,6 +40,7 @@ var writer = (function ()
     ol.appendChild(li);
   }
 
+  // check we are able to run.
   function testForFeatures()
   {
     return Modernizr.canvas && Modernizr.canvastext && Modernizr.indexeddb;
@@ -46,6 +48,8 @@ var writer = (function ()
 
   // box manipulation functions
 
+
+  // create a small, empty box.
   function addBox( e )
   {
     var box = {};
@@ -72,6 +76,7 @@ var writer = (function ()
   }
 
   // selection functions
+
 
   function selectNone()
   {
@@ -122,11 +127,15 @@ var writer = (function ()
     // shouldn't trigger, but hey.
     if( !band.inUse ) return;
 
+    // deselect everything as the band may have shrunk
     selectNone();
+
     var top;
     var bottom;
     var left;
     var right;
+    
+    //  work out which corner x,y refer to.
     if( band.w > 0 )
     {
       left = band.x;
@@ -149,6 +158,8 @@ var writer = (function ()
       bottom = band.y;
     }
 
+
+    // every box that is touched by the band is selected
     boxes.forEach( function(box){
       if(    (box.x + box.w >= left && box.x <= right)
           && (box.y + box.h >= top && box.y <= bottom) )
@@ -158,6 +169,10 @@ var writer = (function ()
     });
   }
 
+  // attempts to pick a box under the cursor
+  // ignores already selected boxes
+  // picks the top-most box it finds
+  // used by drag-n-drop.
   function pickUnselected( e )
   {
     var box = null;
@@ -178,7 +193,9 @@ var writer = (function ()
     return box;
   }
 
-
+  // attempts to select a box under the cursor
+  // will pick the top-most box it finds, if any
+  // used by click + double-click
   function pick( e )
   {
     var box = null;
@@ -197,6 +214,7 @@ var writer = (function ()
 
     return box;
   }
+
 
   // line handlers
 
@@ -217,7 +235,6 @@ var writer = (function ()
   }
 
   // mouse handlers
-
   function mouseUpHandler(e)
   {
     // was this a double click?
@@ -250,10 +267,12 @@ var writer = (function ()
     pub.redraw();
   }
 
+  // handles drags. Note, not on by default, added/removed by mouseUp/Down Handlers.
   function mouseMoveHandler(e)
   {
     if( selectList.length>0 && !band.inUse )
     {
+      // we are click-dragging one or more boxes.
       var deltaX = e.offsetX - dragOffsetX;
       var deltaY = e.offsetY - dragOffsetY;
       selectList.forEach( function(box) {
@@ -263,12 +282,15 @@ var writer = (function ()
     }
     else
     {
+      // We must be drawing a rubber band.
       band.w=e.offsetX-band.x;
       band.h=e.offsetY-band.y;
       selectBand();
     }
+    // update the offsets for next call to mouseMove
     dragOffsetX = e.offsetX;
     dragOffsetY = e.offsetY;
+    // redraw the screen.
     pub.redraw();
   }
 
@@ -277,6 +299,7 @@ var writer = (function ()
     mouseDownTime = e.timeStamp;
     mouseIsDrag = false;
 
+    // did he click anything?
     clickBox=pick(e);
     clickBoxState = clickBox!=null && clickBox.selected;
     
@@ -284,18 +307,27 @@ var writer = (function ()
     if( !event.shiftKey && !clickBoxState )
       selectNone();
 
+    // select the clicked box (if any)
     selectBox(clickBox);
+    // for all selected boxes, save their original location in case we do a drag-n-drop and need to snap back 
     selectList.forEach(function(box){
       box.origX = box.x;
       box.origY = box.y;
     })
+
+    // setup for drag deltas
     dragOffsetX = e.offsetX;
     dragOffsetY = e.offsetY;
-    band.x = dragOffsetX;
-    band.y = dragOffsetY;
 
-    if( selectList.length == 0 ) band.inUse = true;
 
+    if( selectList.length == 0 ) 
+    {
+      band.inUse = true;
+      band.x = dragOffsetX;
+      band.y = dragOffsetY;
+    }
+
+    // enable drag handler
     canvas.addEventListener("mousemove",mouseMoveHandler);
   }
 
@@ -308,14 +340,122 @@ var writer = (function ()
     else
       context.strokeStyle = "#000000";
 
+    // TODO:: sort by stroke style and use .rect and .stroke
     context.strokeRect( box.x, box.y, box.w, box.h );
   }
 
   function drawLine( line )
   {
-    // TODO:: proper edge detection
-    context.moveTo( line.from.x+25, line.from.y+25 );
-    context.lineTo( line.to.x+25, line.to.y+25 );
+    /*
+     * drawing proper lines bound to the edges of the boxes is hard!
+     *
+     * Note we do all this rather than simply fill the rectangle as we will want to draw arrows
+     * we need to figure out the orientation of the target box compared to the souce box
+     */ 
+
+    var ax = line.from.x + ( line.from.w / 2 );
+    var ay = line.from.y + ( line.from.h / 2 );
+    var bx = line.to.x + ( line.to.w / 2 );
+    var by = line.to.y + ( line.to.h / 2 );
+    var Ax = ax;
+    var Ay = ay;
+    var Bx = bx;
+    var By = by;
+    /*
+     *  First we figure out which quadrant we are dealing with
+     *  
+     *  bx<ax | bx>ax
+     *  by<ay | by<ay
+     *  -------------
+     *  bx<ax | bx>ax
+     *  by>ay | by>ay
+     *
+     *  Then need to figure out which octant to map to.
+     *   
+     *  \8|1/
+     *  7\|/2
+     *  -----
+     *  6/|\3
+     *  /5|4\ 
+     *
+     *  As we are always drawing centre to centre, as long as the boxes are the same size
+     *  the lines must be in opposite quadrants.
+     *
+     *  TODO:: cache these calculations
+     *  TODO:: draw arrows
+     *  TODO:: calculate quadrants for mismatched boxes
+     */
+
+    if( bx > ax )
+    {
+      if( by< ay )
+      {
+        if( (bx-ax) > (ay-by) )
+        {
+          // octant #1
+          Ax = line.from.x+line.from.w;
+          Bx = line.to.x;
+        }
+        else
+        {
+          // octant #2
+          Ay = line.from.y;
+          By = line.to.y+line.to.h;
+        }
+      }
+      else
+      {
+        if( (bx-ax) > (by-ay) )
+        {
+          // octant #3
+          Ax = line.from.x+line.from.w;
+          Bx = line.to.x;
+        }
+        else
+        {
+          // octant #4
+          Ay = line.from.y+line.from.h;
+          By = line.to.y;
+        }
+      }
+    }
+    else
+    {
+      if( by>ay )
+      {
+        if( (ax-bx) < (by-ay) )
+        {
+          // octant #5
+          Ay = line.from.y+line.from.h;
+          By = line.to.y;
+        }
+        else
+        {
+          // octant #6
+          Ax = line.from.x;
+          Bx = line.to.x+line.to.w;
+        }
+      }
+      else
+      {
+        if( (ax-bx) < (ay-by) )
+        {
+          // octant #7
+          Ay = line.from.y;
+          By = line.to.y+line.to.h;
+        }
+        else
+        {
+          // octant #8
+          Ax = line.from.x;
+          Bx = line.to.x+line.to.w;
+        }
+      }
+    }
+
+
+    context.moveTo( Ax,Ay );
+    context.lineTo( Bx,By );
   }
 
   function drawBand()
