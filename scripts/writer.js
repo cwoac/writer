@@ -353,14 +353,20 @@ var writer = (function ()
      * we need to figure out the orientation of the target box compared to the souce box
      */ 
 
+    // calculate the midpoints of the two boxes
     var ax = line.from.x + ( line.from.w / 2 );
     var ay = line.from.y + ( line.from.h / 2 );
     var bx = line.to.x + ( line.to.w / 2 );
     var by = line.to.y + ( line.to.h / 2 );
+    // these will hold the actual points we draw between
     var Ax = ax;
     var Ay = ay;
     var Bx = bx;
     var By = by;
+    // some handy lengths that we will need later on
+    var dx = Math.abs(ax-bx);
+    var dy = Math.abs(ay-by);
+
     /*
      *  First we figure out which quadrant we are dealing with
      *  
@@ -383,38 +389,42 @@ var writer = (function ()
      *
      *  TODO:: cache these calculations
      *  TODO:: draw arrows
-     *  TODO:: calculate quadrants for mismatched boxes
+     *  TODO:: calculate quadrants for mismatched box sizes
      */
 
     if( bx > ax )
     {
-      if( by< ay )
+      if( by < ay )
       {
-        if( (bx-ax) > (ay-by) )
+        if( dx < dy )
         {
           // octant #1
-          Ax = line.from.x+line.from.w;
-          Bx = line.to.x;
+          Ay = line.from.y;
+          Ax = line.from.x+(line.from.w + ((line.from.h*dx)/dy))/2;
+          By = line.to.y+line.to.h;
         }
         else
         {
           // octant #2
-          Ay = line.from.y;
-          By = line.to.y+line.to.h;
+          Ax = line.from.x+line.from.w;
+          Ay = line.from.y+(line.from.h - ((line.from.w*dy)/dx))/2;
+          Bx = line.to.x;
         }
       }
       else
       {
-        if( (bx-ax) > (by-ay) )
+        if( dx > dy )
         {
           // octant #3
           Ax = line.from.x+line.from.w;
+          Ay = line.from.y+(line.from.h + ((line.from.w*dy)/dx))/2;
           Bx = line.to.x;
         }
         else
         {
           // octant #4
           Ay = line.from.y+line.from.h;
+          Ax = line.from.x+(line.from.w + ((line.from.h*dx)/dy))/2;
           By = line.to.y;
         }
       }
@@ -423,31 +433,35 @@ var writer = (function ()
     {
       if( by>ay )
       {
-        if( (ax-bx) < (by-ay) )
+        if( dx < dy )
         {
           // octant #5
           Ay = line.from.y+line.from.h;
+          Ax = line.from.x+(line.from.w - ((line.from.h*dx)/dy))/2;
           By = line.to.y;
         }
         else
         {
           // octant #6
           Ax = line.from.x;
+          Ay = line.from.y+(line.from.h + ((line.from.w*dy)/dx))/2;
           Bx = line.to.x+line.to.w;
         }
       }
       else
       {
-        if( (ax-bx) < (ay-by) )
+        if( dx < dy )
         {
-          // octant #7
+          // octant #8
           Ay = line.from.y;
+          Ax = line.from.x+(line.from.w - ((line.from.h*dx)/dy))/2;
           By = line.to.y+line.to.h;
         }
         else
         {
-          // octant #8
+          // octant #7
           Ax = line.from.x;
+          Ay = line.from.y+(line.from.h - ((line.from.w*dy)/dx))/2;
           Bx = line.to.x+line.to.w;
         }
       }
