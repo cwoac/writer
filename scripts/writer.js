@@ -1,4 +1,4 @@
-var writer = (function ()
+var writer = (function (my)
 {
   // private variable declarations here
 
@@ -264,7 +264,7 @@ var writer = (function ()
     clickBox = null;
     band.inUse = false;
     canvas.removeEventListener("mousemove",mouseMoveHandler);
-    pub.redraw();
+    redraw();
   }
 
   // handles drags. Note, not on by default, added/removed by mouseUp/Down Handlers.
@@ -291,7 +291,7 @@ var writer = (function ()
     dragOffsetX = e.offsetX;
     dragOffsetY = e.offsetY;
     // redraw the screen.
-    pub.redraw();
+    redraw();
   }
 
   function mouseDownHandler(e)
@@ -487,10 +487,9 @@ var writer = (function ()
   }
 
   // publicly exposed stuff
-  var pub = {};
 
   // Call this whenever the screen is dirty
-  pub.redraw = function()
+  redraw = function()
   {
     // reset the contents of the canvas
     canvas.width = canvas.width;
@@ -501,30 +500,35 @@ var writer = (function ()
     if( band.inUse ) drawBand();
   }
 
-  pub.listMissingFeatures = function()
+  listMissingFeatures = function()
   {
     if( !Modernizr.canvas ) logFeature( "No canvas.");
     if( !Modernizr.canvastext ) logFeature( "No canvas text.");
     if( !Modernizr.indexeddb ) logFeature( "No indexeddb.");
   }
 
-  pub.resize = function()
+  resize = function()
   {
     // TODO:: Figure out what these should really be
     canvas.width = window.innerWidth - 20;
     canvas.height = window.innerHeight - 20;    
-    pub.redraw();
+    redraw();
   }
 
-  pub.initialise = function()
+  initialise = function()
   {
     if( !testForFeatures() ) window.location = "missing_features.html";
     canvas = document.getElementById("theCanvas");
     context = canvas.getContext("2d");
     canvas.addEventListener("mousedown",mouseDownHandler,false);
     canvas.addEventListener("mouseup",mouseUpHandler,false);
-    pub.resize();
+    resize();
   }
 
-  return pub;
-}());
+  my.redraw = redraw;
+  my.listMissingFeatures = listMissingFeatures;
+  my.resize = resize;
+  my.initialise = initialise;
+
+  return my;
+}( writer || {}));
