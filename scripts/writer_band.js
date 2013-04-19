@@ -87,6 +87,7 @@ var writer = (function (my)
   my.isEnabled = isEnabled;
   my.move = move;
   my.set = set;
+  
   return my;
 }(my));
   return my;

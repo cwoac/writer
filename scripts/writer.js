@@ -1,7 +1,5 @@
 var writer = (function (my)
 {
-  // private variable declarations here
-
   // handy pointer to canvas element
   var canvas;
   // even more handy pointer to the canvas' context
@@ -19,63 +17,6 @@ var writer = (function (my)
   var clickBox=null;
 
   // mouse handlers
-  function mouseUpHandler(e)
-  {
-    // was this a double click?
-    if(    e.timeStamp - mouseUpTime < 200 
-        && e.timeStamp - mouseDownTime < 200 )
-    {
-      mouseUpTime = 0;
-      my.boxes.add( e );
-    }
-    else
-    {
-      // have we done a drag-n-drop?
-      var target = my.boxes.pickUnselected(e);
-      if( target )
-      {
-        //link each selected box to the target and put them back in place.
-        my.boxes.forEachSelected( function(box){ 
-          my.lines.add(box,target);
-          box.x = box.origX;
-          box.y = box.origY;
-        });
-      }
-      // all the work for clicks / drags will have been already completed.
-      mouseUpTime = e.timeStamp;
-    }
-
-    clickBox = null;
-    my.band.disable();
-    canvas.removeEventListener("mousemove",mouseMoveHandler);
-    redraw();
-  }
-
-  // handles drags. Note, not on by default, added/removed by mouseUp/Down Handlers.
-  function mouseMoveHandler(e)
-  {
-    if( my.boxes.selectedCount() >0 && !my.band.isEnabled() )
-    {
-      // we are click-dragging one or more boxes.
-      var deltaX = e.offsetX - dragOffsetX;
-      var deltaY = e.offsetY - dragOffsetY;
-      my.boxes.forEachSelected( function(box) {
-        box.x += deltaX;
-        box.y += deltaY;
-      });
-    }
-    else
-    {
-      // We must be drawing a rubber band.
-      my.band.move(e.offsetX,e.offsetY);
-      my.band.select();
-    }
-    // update the offsets for next call to mouseMove
-    dragOffsetX = e.offsetX;
-    dragOffsetY = e.offsetY;
-    // redraw the screen.
-    redraw();
-  }
 
   function mouseDownHandler(e)
   {
@@ -113,10 +54,63 @@ var writer = (function (my)
     canvas.addEventListener("mousemove",mouseMoveHandler);
   }
 
-  // drawing functions
+  // handles drags. Note, not on by default, added/removed by mouseUp/Down Handlers.
+  function mouseMoveHandler(e)
+  {
+    if( my.boxes.selectedCount() >0 && !my.band.isEnabled() )
+    {
+      // we are click-dragging one or more boxes.
+      var deltaX = e.offsetX - dragOffsetX;
+      var deltaY = e.offsetY - dragOffsetY;
+      my.boxes.forEachSelected( function(box) {
+        box.x += deltaX;
+        box.y += deltaY;
+      });
+    }
+    else
+    {
+      // We must be drawing a rubber band.
+      my.band.move(e.offsetX,e.offsetY);
+      my.band.select();
+    }
+    // update the offsets for next call to mouseMove
+    dragOffsetX = e.offsetX;
+    dragOffsetY = e.offsetY;
+    // redraw the screen.
+    redraw();
+  }
 
+  function mouseUpHandler(e)
+  {
+    // was this a double click?
+    if(    e.timeStamp - mouseUpTime < 200 
+        && e.timeStamp - mouseDownTime < 200 )
+    {
+      mouseUpTime = 0;
+      my.boxes.add( e );
+    }
+    else
+    {
+      // have we done a drag-n-drop?
+      var target = my.boxes.pickUnselected(e);
+      if( target )
+      {
+        //link each selected box to the target and put them back in place.
+        my.boxes.forEachSelected( function(box){ 
+          my.lines.add(box,target);
+          box.x = box.origX;
+          box.y = box.origY;
+        });
+      }
+      // all the work for clicks / drags will have been already completed.
+      mouseUpTime = e.timeStamp;
+    }
 
-
+    clickBox = null;
+    my.band.disable();
+    canvas.removeEventListener("mousemove",mouseMoveHandler);
+    redraw();
+  }
 
 
   // publicly exposed stuff
@@ -130,8 +124,6 @@ var writer = (function (my)
     my.boxes.draw(context);
     if( my.band.isEnabled() ) my.band.draw(context);
   }
-
-
 
   resize = function()
   {
