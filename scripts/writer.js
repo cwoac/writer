@@ -21,61 +21,10 @@ var writer = (function (my)
  
   var lines = [];
 
-  // the rubber band for multi-selection
-  var band = {};
-  band.x=0;
-  band.y=0;
-  band.w=0;
-  band.h=0;
-  band.inUse = false;
 
 
-  function selectBand()
-  {
-    // shouldn't trigger, but hey.
-    if( !band.inUse ) return;
-
-    // deselect everything as the band may have shrunk
-    my.boxes.selectNone();
-
-    var top;
-    var bottom;
-    var left;
-    var right;
-    
-    //  work out which corner x,y refer to.
-    if( band.w > 0 )
-    {
-      left = band.x;
-      right = band.x + band.w;
-    }
-    else
-    {
-      left = band.x + band.w;
-      right = band.x;
-    }
-
-    if( band.h > 0 )
-    {
-      top = band.y;
-      bottom = band.y + band.h;
-    }
-    else
-    {
-      top = band.y + band.h;
-      bottom = band.y;
-    }
 
 
-    // every box that is touched by the band is selected
-    my.boxes.forEach( function(box){
-      if(    (box.x + box.w >= left && box.x <= right)
-          && (box.y + box.h >= top && box.y <= bottom) )
-      {
-        my.boxes.select(box)
-      }
-    });
-  }
 
 
 
@@ -125,7 +74,7 @@ var writer = (function (my)
     }
 
     clickBox = null;
-    band.inUse = false;
+    my.band.disable();
     canvas.removeEventListener("mousemove",mouseMoveHandler);
     redraw();
   }
@@ -133,7 +82,7 @@ var writer = (function (my)
   // handles drags. Note, not on by default, added/removed by mouseUp/Down Handlers.
   function mouseMoveHandler(e)
   {
-    if( my.boxes.selectedCount() >0 && !band.inUse )
+    if( my.boxes.selectedCount() >0 && !my.band.isEnabled() )
     {
       // we are click-dragging one or more boxes.
       var deltaX = e.offsetX - dragOffsetX;
@@ -146,9 +95,8 @@ var writer = (function (my)
     else
     {
       // We must be drawing a rubber band.
-      band.w=e.offsetX-band.x;
-      band.h=e.offsetY-band.y;
-      selectBand();
+      my.band.move(e.offsetX,e.offsetY);
+      my.band.select();
     }
     // update the offsets for next call to mouseMove
     dragOffsetX = e.offsetX;
@@ -185,9 +133,8 @@ var writer = (function (my)
 
     if( my.boxes.selectedCount() == 0 ) 
     {
-      band.inUse = true;
-      band.x = dragOffsetX;
-      band.y = dragOffsetY;
+      my.band.enable();
+      my.band.set(dragOffsetX,dragOffsetY);
     }
 
     // enable drag handler
@@ -334,11 +281,7 @@ var writer = (function (my)
     context.lineTo( Bx,By );
   }
 
-  function drawBand()
-  {
-    context.strokeStyle = "#00ff00";
-    context.strokeRect( band.x, band.y, band.w, band.h );
-  }
+
 
   // publicly exposed stuff
 
@@ -351,7 +294,7 @@ var writer = (function (my)
     context.strokeStyle = "#0000ff";
     context.stroke();
     my.boxes.draw(context);
-    if( band.inUse ) drawBand();
+    if( my.band.isEnabled() ) my.band.draw(context);
   }
 
 
