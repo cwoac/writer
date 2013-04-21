@@ -146,7 +146,9 @@ var writer = (function (my)
   redraw = function()
   {
     // reset the contents of the canvas
-    canvas.width = canvas.width;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.beginPath();
+
     my.lines.draw(context);
     my.boxes.draw(context);
     if( my.band.isEnabled() ) my.band.draw(context);
