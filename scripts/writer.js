@@ -16,6 +16,27 @@ var writer = (function (my)
   var clickBoxState=false;
   var clickBox=null;
 
+  // polyfill for firefox
+  function fixEventOffsets( e )
+  {
+    if (! e.hasOwnProperty('offsetX')) 
+    {
+      var curleft = curtop = 0;
+      if (e.offsetParent) 
+      {
+        var obj=e;
+        do 
+        {
+          curleft += obj.offsetLeft;
+          curtop += obj.offsetTop;
+        } while (obj = obj.offsetParent);
+      }
+      e.offsetX=e.layerX-curleft;
+      e.offsetY=e.layerY-curtop;
+    }
+    return e;
+  }
+
   // mouse handlers
 
   function mouseDownHandler(e)
@@ -23,12 +44,14 @@ var writer = (function (my)
     mouseDownTime = e.timeStamp;
     mouseIsDrag = false;
 
+    e = fixEventOffsets(e);
+
     // did he click anything?
     clickBox=my.boxes.pick(e);
     clickBoxState = clickBox!=null && clickBox.selected;
     
     // if the user clicks an unselected box and doesn't have shift held down deselect anything else.
-    if( !event.shiftKey && !clickBoxState )
+    if( !e.shiftKey && !clickBoxState )
       my.boxes.selectNone();
 
     // select the clicked box (if any)
@@ -57,6 +80,8 @@ var writer = (function (my)
   // handles drags. Note, not on by default, added/removed by mouseUp/Down Handlers.
   function mouseMoveHandler(e)
   {
+    e = fixEventOffsets(e);
+
     if( my.boxes.selectedCount() >0 && !my.band.isEnabled() )
     {
       // we are click-dragging one or more boxes.
@@ -82,6 +107,8 @@ var writer = (function (my)
 
   function mouseUpHandler(e)
   {
+    e = fixEventOffsets(e);
+
     // was this a double click?
     if(    e.timeStamp - mouseUpTime < 200 
         && e.timeStamp - mouseDownTime < 200 )
@@ -145,6 +172,7 @@ var writer = (function (my)
 
   my.redraw = redraw;
   my.resize = resize;
+  my.fixEventOffsets = fixEventOffsets;
   my.initialise = initialise;
 
   return my;
