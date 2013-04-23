@@ -24,6 +24,20 @@
 
   }
 
+  function removeFor( box )
+  {
+    for( i=0; i<lines.length; ++i)
+    {
+      if( lines[i].from == box || lines[i].to == box ) lines.splice(i--,1);
+    }
+  }
+
+  function remove( line )
+  {
+    if( !line ) return;
+    lines.splice(lines.indexOf(line),1);
+  }
+
 
   function drawLine( line )
   {
@@ -172,6 +186,8 @@
   var my = {};
   my.draw = draw;
   my.add = add;
+  my.remove = remove;
+  my.removeFor = removeFor;
 
   return my;
 }(my));

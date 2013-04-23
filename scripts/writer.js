@@ -139,6 +139,13 @@ var writer = (function (my)
     redraw();
   }
 
+  function keyUpHandler(e)
+  {
+    e = fixEventOffsets(e);
+    var kc = event.which ? event.which : event.keyCode;
+    if( kc == 46 ) my.boxes.removeSelected();
+    redraw();
+  }
 
   // publicly exposed stuff
 
@@ -169,6 +176,7 @@ var writer = (function (my)
     context = canvas.getContext("2d");
     canvas.addEventListener("mousedown",mouseDownHandler,false);
     canvas.addEventListener("mouseup",mouseUpHandler,false);
+    window.addEventListener("keyup",keyUpHandler,false);
     resize();
   }
 
