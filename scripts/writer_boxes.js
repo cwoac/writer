@@ -1,6 +1,6 @@
 var writer = (function (my)
 {
-  my.boxes = (function ()
+  my.boxes = (function (writer)
 {
   var boxes = [];
   var selectList = [];
@@ -16,6 +16,24 @@ var writer = (function (my)
     box.selected = false;
     box.links = [];
     boxes.push( box );
+  }
+
+  function remove( box )
+  {
+    if( !box ) return;
+    deselect(box)
+    boxes.splice(boxes.indexOf(box),1);
+    writer.lines.removeFor(box);
+  }
+
+  // deletes all selected boxes
+  function removeSelected()
+  {
+      selectList.forEach( function(box) {
+        boxes.splice(boxes.indexOf(box),1);
+        writer.lines.removeFor(box);
+      });
+      selectList = [];
   }
 
   // checks if there is a link from one box to another.
@@ -162,7 +180,9 @@ var writer = (function (my)
   my.selectOnly = selectOnly;
   my.selectNone = selectNone;
   my.IsLinked = IsLinked;
-  my.add = add
+  my.add = add;
+  my.remove = remove;
+  my.removeSelected = removeSelected;
   my.selectedCount = selectedCount;
   my.forEach = forEach;
   my.forEachSelected = forEachSelected;
@@ -171,6 +191,6 @@ var writer = (function (my)
   my.pick = pick;
 
   return my;
-}());
+}(my));
   return my;
 }( writer || {} ));
